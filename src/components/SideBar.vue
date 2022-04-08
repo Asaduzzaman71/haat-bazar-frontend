@@ -37,27 +37,12 @@
                     </router-link>
                 </li>
             </ul>
-             <ul class="nav nav-treeview">
-                <li class="nav-item">
-                    <router-link to="/books" class="nav-link">
-                        <i class="far fa-circle nav-icon"></i>
-                        <p>Books</p>
-                    </router-link>
-                </li>
-            </ul>
-             <ul class="nav nav-treeview">
-                <li class="nav-item">
-                    <router-link to="/members" class="nav-link">
-                        <i class="far fa-circle nav-icon"></i>
-                        <p>Members</p>
-                    </router-link>
-                </li>
-            </ul>
+            
             <ul class="nav nav-treeview">
                 <li class="nav-item">
-                    <router-link to="/issues" class="nav-link">
+                    <router-link to="/products" class="nav-link">
                         <i class="far fa-circle nav-icon"></i>
-                        <p>Book Issues</p>
+                        <p>Products</p>
                     </router-link>
                 </li>
             </ul>

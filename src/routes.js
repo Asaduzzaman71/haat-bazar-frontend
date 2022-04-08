@@ -1,6 +1,4 @@
 import DashBoard from './pages/DashbBoard.vue';
-import LibraryMember from './pages/Member.vue';
-import IssueBook from './pages/Issue.vue';
 import LoginPage from  './pages/Login.vue';
 import SignUp from './pages/SignUp.vue';
 import CategoryIndex from './pages/Category.vue';
@@ -50,16 +48,5 @@ export const routes = [
         beforeEnter : guardMyroute,
         component: ProductPage
     },
-    {
-        name: 'member',
-        path: '/members',
-        beforeEnter : guardMyroute,
-        component: LibraryMember
-    },
-    {
-        name: 'issues',
-        path: '/issues',
-        beforeEnter : guardMyroute,
-        component: IssueBook
-    },
+  
 ];

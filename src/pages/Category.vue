@@ -21,8 +21,7 @@
                             <tr v-for="(category,index) in categories" :key="category.id">
                                 <td>{{index+1}}</td>
                                 <td>{{category.name}}</td>
-                                <td>{{category.name}}</td>
-                                <td>{{category.name}}</td>
+                                <td>{{category.status == 1 ? 'Published' : 'Pending'}}</td>
                                 <td><button type="button" class="btn btn-danger" @click="deleteCategory({...category})"><i class="fa fa-trash"></i></button><button type="button" class="btn btn-primary" @click="openEditModal({...category})"><i class="fa fa-edit"></i></button></td>
                             </tr>
 
@@ -152,7 +151,7 @@ export default {
         close() {
             this.createMode = false;
             this.editMode=false;
-            this.form=false;
+            this.form=[];
         },
 
         addCategory() {
