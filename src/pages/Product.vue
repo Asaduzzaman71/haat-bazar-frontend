@@ -1,7 +1,19 @@
 <template>
 <AdminLayout>
     <div class="row mb-2">
-        <div class="offset-10 col-sm-2 d-flex justify-content-end">
+        <div class="col-sm-4">
+            <form @submit.prevent="searchProduct()">
+                <div class=" input-group">
+                    <input type="text" class="form-control" placeholder="Search Products" v-model="search_input">
+                    <div class="input-group-append">
+                        <button class="btn btn-secondary" type="submit"> 
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="offset-6 col-sm-2">
             <button type="button" class="btn btn-primary" @click="openCreateModal()">Create Product</button>
         </div>
     </div>
@@ -22,7 +34,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(product,index) in products" :key="product.id">
+                        <tr v-for="(product,index) in allProducts" :key="product.id">
                             <td>{{index+1}}</td>
                             <td><img :src="'http://127.0.0.1:80/storage/'+product.product_images[0].image" class="rounded" alt="Services" width="50" height="50"></td>
                             <td>{{product.name}}</td>
@@ -39,7 +51,7 @@
             </div>
         </div>
     </div>
-    <form @submit.prevent=" editMode ? editProduct():addProduct()" enctype="multipart/form-data">
+    <form @submit.prevent=" editMode ? editProduct():addNewProduct()" enctype="multipart/form-data">
         <ModalForm v-if="createMode" @close="close">
             <template v-slot:header>
                 <h6 v-if="createMode"> Create Product </h6>
@@ -64,7 +76,7 @@
                     <div class="form-group mb-3">
                         <div>Choose category</div>
                         <select v-model="category_id" class="form-control" id="category_list">
-                            <option v-for="category in categories" :key="category.id" :value="category.id">
+                            <option v-for="category in categoryList" :key="category.id" :value="category.id">
                                 {{category.name}}
                             </option>
                         </select>
@@ -173,7 +185,7 @@
                     <div class="form-group mb-3">
                         <div>Choose category</div>
                         <select v-model="category_id" class="form-control" id="category_list">
-                            <option v-for="category in categories" :key="category.id" :value="category.id">
+                            <option v-for="category in categoryList" :key="category.id" :value="category.id">
                                 {{category.name}}
                             </option>
                         </select>
@@ -273,7 +285,8 @@
 </template>
 
 <script>
-import axios from "axios"
+import axios from "axios";
+import { mapGetters , mapActions } from "vuex";
 import AdminLayout from '../layouts/AdminLayout.vue';
 import ModalForm from "../components/Modal.vue";
 import { QuillEditor } from '@vueup/vue-quill';
@@ -284,6 +297,11 @@ export default {
         AdminLayout,
         ModalForm,
         QuillEditor
+    },
+    computed: mapGetters(["categoryList","allProducts"]),
+    created() {
+        this.getProducts();
+        this.getCategories();
     },
     data() {
         return {
@@ -297,8 +315,6 @@ export default {
             no_of_unit_in_stock: null,
             description: '',
             status: 1,
-            products: [],
-            categories: [],
             productId: null,
             errors: [],
             unauthorized: false,
@@ -306,30 +322,11 @@ export default {
             images: [],
             previewFiles: [],
             uploadedImages: [],
+            search_input: '',
         }
     },
-    created() {
-        const token = (localStorage.getItem('access-token'));
-        axios.get('http://127.0.0.1:80/api/categories', {
-                headers: {
-                    authorization: "Bearer " + token,
-                }
-            })
-            .then(response => {
-                this.categories = response.data.results;
-            });
-        axios.get('http://127.0.0.1:80/api/products', {
-                headers: {
-                    authorization: "Bearer " + token
-                }
-            })
-            .then(response => {
-                console.log(response)
-                this.products = response.data.results;
-                this.product_id = this.products[0].id;
-            });
-    },
     methods: {
+         ...mapActions(["getCategories","getProducts","addProduct","updateProduct","removeProduct","searchProductByName"]),
         changeIsActiveValue(IsActiveValue) {
             this.isActive = IsActiveValue;
         },
@@ -371,22 +368,9 @@ export default {
             this.images.splice(key, 1);
             this.previewFiles.splice(key, 1);
         },
-        removeUploadedImage(uploadedImage, key) {
-            const token = (localStorage.getItem('access-token'));
-            axios.delete('http://127.0.0.1:80/api/product-images/' + uploadedImage.id, {
-                headers: {
-                    authorization: "Bearer " + token
-                }
-            }).then(() => {
-                this.uploadedImages.splice(key, 1);
-            }).catch(() => {
-
-            });
-
-        },
-        addProduct() {
+        
+        addNewProduct() {
             this.isLoading = true;
-            const token = (localStorage.getItem('access-token'));
             let formData = new FormData();
             formData.append('name', this.name);
             formData.append('category_id', this.category_id);
@@ -397,15 +381,7 @@ export default {
             for (var i = 0; i < this.images.length; i++) {
                 formData.append('images[' + i + ']', this.images[i]);
             }
-            console.log(formData);
-            axios.post('http://127.0.0.1:80/api/products', formData, {
-                headers: {
-                    authorization: "Bearer " + token,
-                    "Content-Type": "multipart/form-data"
-                }
-            }).then((response) => {
-                console.log(response.data.results);
-                this.products.push(response.data.results);
+            this.addProduct(formData).then( ( ) =>{
                 this.$swal(
                     'Created!',
                     'products has been created.',
@@ -417,10 +393,10 @@ export default {
                 this.previewFiles = [];
                 this.unauthorized = false;
             }).catch((error) => {
+                console.log(error.response.status)
                 if (error.response.status == 422) {
                     this.unauthorized = false;
                     this.errors = error.response.data.errors;
-
                 } else if (error.response.status == 401) {
                     this.unauthorized = true;
                     this.errors = error.response.data.error;
@@ -433,6 +409,7 @@ export default {
 
             this.isLoading = true;
             let formData = new FormData();
+            formData.append('id', this.productId);
             formData.append('name', this.name);
             formData.append('category_id', this.category_id);
             formData.append('unit_price', this.unit_price);
@@ -444,18 +421,7 @@ export default {
             }
             formData.append("_method", "PUT");
 
-            const token = (localStorage.getItem('access-token'));
-            axios.post('http://127.0.0.1:80/api/products/' + this.productId, formData, {
-                headers: {
-                    authorization: "Bearer " + token,
-                    "Content-Type": "multipart/form-data"
-                }
-            }).then((response) => {
-                this.products.find((item, index) => {
-                    if (item.id == response.data.results.id) {
-                        this.products.splice(index, 1, response.data.results);
-                    }
-                })
+            this.updateProduct(formData).then( ( ) =>{
                 this.$swal(
                     'Updated!',
                     'Book information has been updated.',
@@ -480,9 +446,21 @@ export default {
                 this.isLoading = false;
             });
         },
+        removeUploadedImage(uploadedImage, key) {
+            const token = (localStorage.getItem('access-token'));
+            axios.delete('http://127.0.0.1:80/api/product-images/' + uploadedImage.id, {
+                headers: {
+                    authorization: "Bearer " + token
+                }
+            }).then(() => {
+                this.uploadedImages.splice(key, 1);
+            }).catch(() => {
+
+            });
+
+        },
 
         deleteProduct(product) {
-
             this.$swal({
                 title: 'Are you sure?',
                 text: "You won't be able to revert this!",
@@ -492,23 +470,12 @@ export default {
                 cancelButtonColor: '#d33',
                 confirmButtonText: 'Yes, delete it!'
             }).then(() => {
-
-                const token = (localStorage.getItem('access-token'));
-                axios.delete('http://127.0.0.1:80/api/products/' + product.id, {
-                    headers: {
-                        authorization: "Bearer " + token
-                    }
-                }).then((response) => {
+               this.removeProduct(product).then(() =>{
                     this.$swal(
                         'Deleted!',
-                        'Boo has been deleted.',
+                        'Product has been deleted.',
                         'success'
                     )
-                    this.products.find((item, index) => {
-                        if (item.id == response.data.results.id) {
-                            this.products.splice(index, 1);
-                        }
-                    })
                     this.errors = [];
                     this.unauthorized = false;
                 }).catch((error) => {
@@ -522,8 +489,12 @@ export default {
                     }
                 })
             })
-
         },
+        searchProduct(){
+            let formData = new FormData();
+            formData.append('search_input', this.search_input);
+            this.searchProductByName(formData);
+        }
 
     }
 

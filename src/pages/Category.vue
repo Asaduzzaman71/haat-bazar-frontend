@@ -18,7 +18,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(category,index) in categories" :key="category.id">
+                            <tr v-for="(category,index) in allCategories" :key="category.id">
                                 <td>{{index+1}}</td>
                                 <td>{{category.name}}</td>
                                 <td>{{category.status == 1 ? 'Published' : 'Pending'}}</td>
@@ -31,7 +31,7 @@
             </div>
         </div>
 
-        <form @submit.prevent=" editMode ? editCategory():addCategory()">
+        <form @submit.prevent=" editMode ? editCategory():addNewCategory()">
             <ModalForm v-if="createMode" @close="close">
                 <template v-slot:header> <h6 v-if="createMode">Add Category</h6></template>
 
@@ -90,8 +90,6 @@
                         </div>
                         Submit
                     </button>
-
-
                 </template>
             </ModalForm>
         </form>
@@ -100,15 +98,20 @@
 </template>
 
 <script>
-import axios from "axios"
-import AdminLayout from '../layouts/AdminLayout.vue'
+import { mapGetters , mapActions } from "vuex";
+import AdminLayout from '../layouts/AdminLayout.vue';
 import ModalForm from "../components/Modal.vue";
 export default {
-  name: "CategoryIndex",
-  components: {
-    AdminLayout,ModalForm
-  },
-  data () {
+    name: "CategoryIndex",
+    components: {
+        AdminLayout,ModalForm
+    },
+    computed: mapGetters(["allCategories"]),
+    created() {
+        this.getCategories();
+    },
+   
+    data () {
         return {
             isActive: false,
             createMode: false,
@@ -118,24 +121,13 @@ export default {
                 id:null,
                 name: '',
             },
-            categories:[],
             errors:[],
             unauthorized: false
         }
     },
-    created() {
-            const token = (localStorage.getItem('access-token'));
-            axios.get('http://127.0.0.1:80/api/categories',{
-                    headers: {
-                        authorization: "Bearer " + token
-                    }
-                })
-                .then(response => {
-                    this.categories = response.data.results;
-                    console.log(this.categories);
-                });
-        },
+
     methods: {
+        ...mapActions(["getCategories","addCategory","updateCategory","removeCategory"]),
         changeIsActiveValue(IsActiveValue) {
             this.isActive=IsActiveValue;
         },
@@ -143,7 +135,7 @@ export default {
             this.createMode = true;
         },
         openEditModal(category) {
-            this.form=[];
+            
             this.createMode = false;
             this.editMode = true;
             this.form=category;
@@ -153,79 +145,61 @@ export default {
             this.editMode=false;
             this.form=[];
         },
-
-        addCategory() {
-            this.isLoading=true;
-            const token = (localStorage.getItem('access-token'));
-            axios.post('http://127.0.0.1:80/api/categories', this.form,{
-            headers: {
-                authorization: "Bearer " + token
-            }
-            }).then((response) =>{
-                this.categories.push(response.data.results);
+        addNewCategory(){
+            this.isLoading = true;
+            console.log(this.form);
+            this.addCategory(this.form).then( ( ) =>{
                 this.$swal(
-                            'Updated!',
-                            'Category has been updated.',
+                            'Created!',
+                            'New Category has been created.',
                             'success'
                             )
                 this.createMode=false;
                 this.errors=[];
-                this.form=[];
+                this.form.id=null;
+                this.form.name = '';
                 this.unauthorized = false;
             }).catch((error) =>{
                 console.log(error.response.data.errors);
                 if(error.response.status == 422){
                     this.unauthorized = false;
                     this.errors = error.response.data.errors;
-
                 }
                 else if(error.response.status == 401){
                     this.unauthorized = true;
                     this.errors = error.response.data.error;
                 }
             }).finally(() => {
-                      this.isLoading = false;
-                    });
+                this.isLoading = false;
+            });
         },
         editCategory(){
-            const token = (localStorage.getItem('access-token'));
             this.isLoading=true;
-            axios.put('http://127.0.0.1:80/api/categories/'+this.form.id, this.form,{
-            headers: {
-                authorization: "Bearer " + token
-            }
-            }).then((response) =>{
-                this.categories.find((item,index)=>{
-                    if(item.id==response.data.results.id){
-                        this.categories.splice(index,1,response.data.results);
-                    }
-                })
+            this.updateCategory(this.form).then(() =>{
                 this.$swal(
                         'Updated!',
                         'Category has been updated.',
                         'success'
                         )
                 this.editMode=false;
-                this.form=[];
+                this.form.id=null;
+                this.form.name = '';
                 this.errors=[];
                 this.unauthorized = false;
             }).catch((error) =>{
-                console.log(error.response.data.errors);
-
+                console.log(error);
                 if(error.response.status == 422){
                     this.unauthorized = false;
                     this.errors = error.response.data.errors;
-
                 }
                 else if(error.response.status == 401){
                     this.unauthorized = true;
                     this.errors = error.response.data.error;
                 }
-            }).finally(() => {
-                      this.isLoading = false;
-                    });
+            }).finally(() => { 
+                this.isLoading = false;
+            });
         },
-
         deleteCategory(category){
             this.$swal({
                 title: 'Are you sure?',
@@ -236,26 +210,16 @@ export default {
                 cancelButtonColor: '#d33',
                 confirmButtonText: 'Yes, delete it!'
                 }).then(() => {
-                    const token = (localStorage.getItem('access-token'));
-                    axios.delete('http://127.0.0.1:80/api/categories/'+category.id,{
-                    headers: {
-                        authorization: "Bearer " + token
-                    }
-                    }).then((response) =>{
+                    
+                    this.removeCategory(category).then(() =>{
                         this.$swal(
                             'Deleted!',
                             'Category has been deleted.',
                             'success'
                             )
-                        this.categories.find((item,index)=>{
-                            if(item.id==response.data.results.id){
-                                this.categories.splice(index,1);
-                            }
-                        })
                         this.errors=[];
                         this.unauthorized = false;
                     }).catch((error) =>{
-                        console.log(error.response);
                         if(error.response.status == 422){
                             this.unauthorized = false;
                             this.errors = error.response.data.errors;
@@ -266,12 +230,9 @@ export default {
                         }
                     })
                 })
-
-        },
-
+            },
+         
     }
-
-
 }
 </script>
 
