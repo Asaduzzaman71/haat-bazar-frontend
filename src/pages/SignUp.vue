@@ -53,7 +53,7 @@ export default {
             if(this.form.password_confirmation != this.form.password){
                 this.passwordConfirmationError= 'password does not matched';
             }else{
-                axios.post('http://127.0.0.1:80/api/auth/register', this.form).then((response) =>{
+                axios.post('auth/register', this.form).then((response) =>{
                     this.$router.push({ name: "login"});
                     localStorage.setItem('access-token', response.data.access_token);
                 }).catch((error) =>{

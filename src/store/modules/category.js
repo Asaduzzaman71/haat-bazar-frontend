@@ -10,7 +10,7 @@ const actions = {
     
     async getCategories({ commit }) {
         const token = localStorage.getItem('access-token');
-        const response = await axios.get('http://127.0.0.1:80/api/categories',{
+        const response = await axios.get('categories',{
                         headers: {
                             authorization: "Bearer " + token
                         }
@@ -20,7 +20,7 @@ const actions = {
 
     async addCategory({ commit }, category ) {
         const token = (localStorage.getItem('access-token'));
-        const response  = await axios.post('http://127.0.0.1:80/api/categories', category,{
+        const response  = await axios.post('categories', category,{
             headers: {
                 authorization: "Bearer " + token
             }
@@ -30,7 +30,7 @@ const actions = {
 
     async updateCategory({ commit }, category) {
         const token = (localStorage.getItem('access-token'));
-        const response = await axios.put('http://127.0.0.1:80/api/categories/'+category.id, category,{
+        const response = await axios.put('categories/'+category.id, category,{
                 headers: {
                     authorization: "Bearer " + token
                 }
@@ -40,7 +40,7 @@ const actions = {
 
     async removeCategory({ commit }, category) {
         const token = (localStorage.getItem('access-token'));
-        axios.delete('http://127.0.0.1:80/api/categories/'+category.id,{
+        axios.delete('categories/'+category.id,{
             headers: {
                 authorization: "Bearer " + token
             }

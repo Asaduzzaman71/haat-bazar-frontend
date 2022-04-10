@@ -11,7 +11,7 @@ const getters = {
 const actions = {
     async getCategories({ commit }) {
         const token = localStorage.getItem('access-token');
-        const response = await axios.get('http://127.0.0.1:80/api/categories',{
+        const response = await axios.get('categories',{
                         headers: {
                             authorization: "Bearer " + token
                         }
@@ -20,7 +20,7 @@ const actions = {
     },
     async getProducts({ commit }) {
         const token = localStorage.getItem('access-token');
-        const response = await axios.get('http://127.0.0.1:80/api/products',{
+        const response = await axios.get('products',{
                         headers: {
                             authorization: "Bearer " + token
                         }
@@ -30,7 +30,7 @@ const actions = {
 
     async addProduct({ commit }, product ) {
         const token = (localStorage.getItem('access-token'));
-        const response  = await axios.post('http://127.0.0.1:80/api/products', product,{
+        const response  = await axios.post('products', product,{
             headers: {
                 authorization: "Bearer " + token,
                 "Content-Type": "multipart/form-data"
@@ -43,7 +43,7 @@ const actions = {
         console.log(product.get('id'));
         console.log(product.get('category_id'));
         const token = (localStorage.getItem('access-token'));
-        const response = await axios.post('http://127.0.0.1:80/api/products/'+product.get('id'), product,{
+        const response = await axios.post('products/'+product.get('id'), product,{
                 headers: {
                     authorization: "Bearer " + token,
                     "Content-Type": "multipart/form-data"
@@ -54,7 +54,7 @@ const actions = {
 
     async removeProduct({ commit }, product) {
         const token = (localStorage.getItem('access-token'));
-        await axios.delete('http://127.0.0.1:80/api/products/'+product.id,{
+        await axios.delete('products/'+product.id,{
             headers: {
                 authorization: "Bearer " + token
             }
@@ -63,7 +63,7 @@ const actions = {
     },
     async searchProductByName({ commit },seacrhKey) {
         const token = (localStorage.getItem('access-token'));
-        const response = await axios.post('http://127.0.0.1:80/api/product-search-by-name',seacrhKey,{
+        const response = await axios.post('product-search-by-name',seacrhKey,{
             headers: {
                 authorization: "Bearer " + token
             }

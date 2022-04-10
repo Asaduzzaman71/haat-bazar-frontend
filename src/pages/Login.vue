@@ -40,7 +40,7 @@ export default {
     },
     methods:{
         login(){
-            axios.post('http://127.0.0.1:80/api/auth/login', this.form).then((response) =>{
+            axios.post('auth/login', this.form).then((response) =>{
             this.$router.push({ name: "dashboard"});
             localStorage.setItem('access-token', response.data.access_token);
             }).catch((error) =>{
