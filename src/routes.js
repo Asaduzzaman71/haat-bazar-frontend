@@ -1,8 +1,8 @@
-import LoginPage from  './pages/Login.vue';
-import SignUp from './pages/SignUp.vue';
-import DashBoard from './pages/DashbBoard.vue';
 import CategoryIndex from './pages/Category.vue';
+import DashBoard from './pages/DashbBoard.vue';
+import LoginPage from './pages/Login.vue';
 import ProductPage from './pages/Product.vue';
+import SignUp from './pages/SignUp.vue';
 
 function guardMyroute(to, from, next)
 {

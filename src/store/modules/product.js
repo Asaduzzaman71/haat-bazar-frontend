@@ -6,18 +6,8 @@ const state = {
 };
 const getters = {
   allProducts : state => state.products,
-  categoryList : state => state.categories
 };
 const actions = {
-    async getCategories({ commit }) {
-        const token = localStorage.getItem('access-token');
-        const response = await axios.get('categories',{
-                        headers: {
-                            authorization: "Bearer " + token
-                        }
-                    });
-        commit("setCategories", response.data.results);
-    },
     async getProducts({ commit }) {
         const token = localStorage.getItem('access-token');
         const response = await axios.get('products',{
@@ -69,6 +59,16 @@ const actions = {
             }
         })
         commit("setProducts", response.data.results);
+    },
+    async fetchProductByPageNumber({ commit }, pageNumber){
+        const token = localStorage.getItem('access-token');
+        const response = await axios.get('products?page='+pageNumber,{
+                        headers: {
+                            authorization: "Bearer " + token
+                        }
+                    });
+        commit("setProducts", response.data.results);
+
     }
     
 };

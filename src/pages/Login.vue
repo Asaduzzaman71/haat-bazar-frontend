@@ -1,61 +1,65 @@
 <template>
-    <div class="login-page">
-        <div class="form">
-            <div v-if="unauthorized">
-                <span class="text-danger">{{ errors}} </span>
-            </div>
-            <div v-else>
-                <div v-for="(errorArray, index) in errors" :key="index">
-                    <div v-for="(allErrors, index) in errorArray" :key="index">
-                        <span class="text-danger">{{ allErrors}} </span>
-                    </div>
-                </div>
-            </div>
-            <form @submit.prevent="login" method="post"  class="login-form">
-                <input type="text" placeholder="name" v-model="form.email"/>
-                <input type="password" placeholder="password" v-model="form.password"/>
-                <button>login</button>
-                <p class="message">Not registered?
-                    <router-link to="/signup" class="nav-link">
-                        <p>Create an account</p>
-                    </router-link>
-                </p>
-            </form>
+  <div class="login-page">
+    <div class="form">
+      <div v-if="unauthorized">
+        <span class="text-danger">{{ errors }} </span>
+      </div>
+      <div v-else>
+        <div v-for="(errorArray, index) in errors" :key="index">
+          <div v-for="(allErrors, index) in errorArray" :key="index">
+            <span class="text-danger">{{ allErrors }} </span>
+          </div>
         </div>
+      </div>
+      <form @submit.prevent="login" method="post" class="login-form">
+        <input type="text" placeholder="name" v-model="form.email" />
+        <input type="password" placeholder="password" v-model="form.password" />
+        <button>login</button>
+        <p class="message">
+          Not registered?
+          <router-link to="/signup" class="nav-link">
+            <p>Create an account</p>
+          </router-link>
+        </p>
+      </form>
     </div>
+  </div>
 </template>
 <script>
 import axios from "axios";
 export default {
-    name:'LoginPage',
-    data(){
-        return{
-            form:{
-                email: '',
-                password: '',
-            },
-            errors:[],
-            unauthorized: false
-        }
+  name: "LoginPage",
+  data() {
+    return {
+      form: {
+        email: "",
+        password: "",
+      },
+      errors: [],
+      unauthorized: false,
+    };
+  },
+  methods: {
+    login() {
+      axios
+        .post("auth/login", this.form)
+        .then((response) => {
+          this.$router.push({ name: "dashboard" });
+          localStorage.setItem("access-token", response.data.access_token);
+        })
+        .catch((error) => {
+          console.log(error.response);
+          if (error.response.status == 422) {
+            this.unauthorized = false;
+            this.errors = error.response.data.error;
+          } else if (error.response.status == 401) {
+            this.unauthorized = true;
+            this.errors = error.response.data.error;
+          }
+        });
     },
-    methods:{
-        login(){
-            axios.post('auth/login', this.form).then((response) =>{
-            this.$router.push({ name: "dashboard"});
-            localStorage.setItem('access-token', response.data.access_token);
-            }).catch((error) =>{
-                console.log(error.response);
-                if(error.response.status == 422){
-                    this.unauthorized = false;
-                    this.errors = error.response.data.error;
-                }else if(error.response.status == 401){
-                    this.unauthorized = true;
-                    this.errors = error.response.data.error;
-                }
-            })
-        }
-    }
-}
+  },
+};
 </script>
 <style scoped>
 @import url(https://fonts.googleapis.com/css?family=Roboto:300);
@@ -69,7 +73,7 @@ export default {
 .form {
   position: relative;
   z-index: 1;
-  background: #FFFFFF;
+  background: #ffffff;
   max-width: 400px;
   margin: 0 auto 100px;
   padding: 45px;
@@ -91,18 +95,20 @@ export default {
   font-family: "Roboto", sans-serif;
   text-transform: uppercase;
   outline: 0;
-  background: #4CAF50;
+  background: #4caf50;
   width: 100%;
   border: 0;
   padding: 15px;
-  color: #FFFFFF;
+  color: #ffffff;
   font-size: 14px;
   -webkit-transition: all 0.3 ease;
   transition: all 0.3 ease;
   cursor: pointer;
 }
-.form button:hover,.form button:active,.form button:focus {
-  background: #43A047;
+.form button:hover,
+.form button:active,
+.form button:focus {
+  background: #43a047;
 }
 .form .message {
   margin: 15px 0 0;
@@ -110,7 +116,7 @@ export default {
   font-size: 14px;
 }
 .form .message a {
-  color: #4CAF50;
+  color: #4caf50;
   text-decoration: none;
 }
 .form .register-form {
@@ -122,7 +128,8 @@ export default {
   max-width: 300px;
   margin: 0 auto;
 }
-.container:before, .container:after {
+.container:before,
+.container:after {
   content: "";
   display: block;
   clear: both;
@@ -147,14 +154,18 @@ export default {
   text-decoration: none;
 }
 .container .info span .fa {
-  color: #EF3B3A;
+  color: #ef3b3a;
 }
 body {
   background: #76b852; /* fallback for old browsers */
-  background: rgb(141,194,111);
-  background: linear-gradient(90deg, rgba(141,194,111,1) 0%, rgba(118,184,82,1) 50%);
+  background: rgb(141, 194, 111);
+  background: linear-gradient(
+    90deg,
+    rgba(141, 194, 111, 1) 0%,
+    rgba(118, 184, 82, 1) 50%
+  );
   font-family: "Roboto", sans-serif;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;      
+  -moz-osx-font-smoothing: grayscale;
 }
 </style>
